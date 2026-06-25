@@ -1,0 +1,226 @@
+/* Industrial Theme: Charcoal (#2D2D2D, #1A1A1A) and Safety Orange (#FF5F15) */
+
+.aac-dashboard {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1A1A1A;
+    color: #F0F0F0;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.aac-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 4px solid #FF5F15;
+    padding-bottom: 15px;
+}
+
+.aac-header h1 {
+    color: #FF5F15;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    color: #AAAAAA;
+    font-size: 1.2rem;
+    margin-top: 5px;
+}
+
+.aac-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.card {
+    background-color: #2D2D2D;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    border-left: 5px solid #FF5F15;
+}
+
+h2 {
+    color: #FF5F15;
+    margin-top: 0;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #CCCCCC;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: #111;
+    border: 1px solid #444;
+    color: #FFF;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #FF5F15;
+    box-shadow: 0 0 5px rgba(255, 95, 21, 0.5);
+}
+
+.calc-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    background-color: #222;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.calc-label {
+    flex: 1;
+}
+
+.rate-info {
+    display: block;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.calc-row input {
+    width: 100px;
+    margin: 0 15px;
+    text-align: right;
+}
+
+.row-total {
+    width: 100px;
+    text-align: right;
+    font-weight: bold;
+    color: #FF5F15;
+    font-size: 1.1rem;
+}
+
+.total-section {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #444;
+}
+
+.grand-total {
+    color: #FF5F15;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.signature-container {
+    background-color: #FFF;
+    border: 2px dashed #888;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.sig-instruction {
+    color: #AAA;
+    margin-bottom: 10px;
+}
+
+canvas {
+    cursor: crosshair;
+    display: block;
+    margin: 0 auto;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    margin-bottom: 50px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background-color: #FF5F15;
+    color: #FFF;
+}
+
+.btn-primary:hover {
+    background-color: #E04D0D;
+}
+
+.btn-secondary {
+    background-color: #555;
+    color: #FFF;
+}
+
+.btn-secondary:hover {
+    background-color: #666;
+}
+
+.btn-danger {
+    background-color: #D32F2F;
+    color: #FFF;
+}
+
+.btn-danger:hover {
+    background-color: #B71C1C;
+}
+
+@media (max-width: 600px) {
+    .calc-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .calc-row input {
+        width: 100%;
+        margin: 10px 0;
+        text-align: left;
+    }
+    
+    .row-total {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}

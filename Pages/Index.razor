@@ -1,0 +1,84 @@
+@page "/"
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Anytime Animal Control - Estimate Calculator</PageTitle>
+
+<div class="aac-dashboard">
+    <header class="aac-header">
+        <h1>Anytime Animal Control</h1>
+        <p class="subtitle">Estimate Calculator</p>
+    </header>
+
+    <div class="aac-content">
+        <section class="client-info card">
+            <h2>Client Information</h2>
+            <div class="form-group">
+                <label for="clientName">Client Name</label>
+                <input id="clientName" @bind="clientName" placeholder="Enter full name" />
+            </div>
+            <div class="form-group">
+                <label for="clientAddress">Address</label>
+                <input id="clientAddress" @bind="clientAddress" placeholder="Enter property address" />
+            </div>
+            <div class="form-group">
+                <label for="clientEmail">Email</label>
+                <input id="clientEmail" type="email" @bind="clientEmail" placeholder="Enter email address" />
+            </div>
+        </section>
+
+        <section class="calculator card">
+            <h2>Services Calculator</h2>
+            
+            <div class="calc-row">
+                <div class="calc-label">
+                    <label>Ridge Vent Screening (per linear ft)</label>
+                    <span class="rate-info">@($"${RidgeVentRate}/ft")</span>
+                </div>
+                <input type="number" min="0" @bind="ridgeVentFt" @bind:event="oninput" @onkeyup="CalculateTotal" @onchange="CalculateTotal" />
+                <span class="row-total">@($"${RidgeVentTotal:F2}")</span>
+            </div>
+
+            <div class="calc-row">
+                <div class="calc-label">
+                    <label>Soffit Returns (per unit)</label>
+                    <span class="rate-info">@($"${SoffitReturnRate}/ea")</span>
+                </div>
+                <input type="number" min="0" @bind="soffitReturnsCount" @bind:event="oninput" @onkeyup="CalculateTotal" @onchange="CalculateTotal" />
+                <span class="row-total">@($"${SoffitReturnTotal:F2}")</span>
+            </div>
+
+            <div class="calc-row">
+                <div class="calc-label">
+                    <label>Wood Trim/Brick Sealing (per linear ft)</label>
+                    <span class="rate-info">@($"${SealingRate}/ft")</span>
+                </div>
+                <input type="number" min="0" @bind="sealingFt" @bind:event="oninput" @onkeyup="CalculateTotal" @onchange="CalculateTotal" />
+                <span class="row-total">@($"${SealingTotal:F2}")</span>
+            </div>
+
+            <div class="total-section">
+                <h3>Estimated Total: <span class="grand-total">@($"${GrandTotal:F2}")</span></h3>
+            </div>
+        </section>
+
+        <section class="project-notes card">
+            <h2>Project Notes</h2>
+            <textarea @bind="projectNotes" rows="4" placeholder="Enter additional notes, specific instructions, or wildlife observations here..."></textarea>
+        </section>
+
+        <section class="signature-section card">
+            <h2>Client Authorization</h2>
+            <p class="sig-instruction">Please sign below to authorize the quoted work.</p>
+            <div class="signature-container">
+                <canvas id="signatureCanvas" width="400" height="200"></canvas>
+            </div>
+            <button class="btn btn-secondary clear-sig" @onclick="ClearSignature">Clear Signature</button>
+        </section>
+
+        <section class="actions">
+            <button class="btn btn-danger" @onclick="ResetForm">Reset</button>
+            <button class="btn btn-secondary" @onclick="SaveOffline">Save Offline</button>
+            <button class="btn btn-primary" @onclick="GenerateQuote">Generate Quote PDF</button>
+        </section>
+    </div>
+</div>

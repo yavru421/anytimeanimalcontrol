@@ -1,12 +1,12 @@
 {
-  "name": "Pour & Measure",
-  "short_name": "PourMeasure",
+  "name": "Anytime Animal Control",
+  "short_name": "AAC Quote",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#090a0f",
-  "theme_color": "#090a0f",
+  "background_color": "#121212",
+  "theme_color": "#FF5F15",
   "prefer_related_applications": false,
   "icons": [
     {
@@ -21,7 +21,7 @@
       "sizes": "192x192"
     }
   ],
-  "description": "Real-time visual alignment guide for on-site mixing of concrete additives, epoxies, and sealants.",
+  "description": "Estimate Compiler and Document Generator for Anytime Animal Control.",
   "share_target": {
     "action": "/share-target",
     "method": "POST",

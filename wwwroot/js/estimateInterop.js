@@ -137,94 +137,164 @@ window.generateQuotePdf = async function (quoteData) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
     
-    doc.setFontSize(22);
+    // --- 1. PREMIUM HEADER BLOCK ---
+    // Dark Charcoal Background
+    doc.setFillColor(45, 45, 45);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    // Title (Safety Orange)
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 95, 21);
-    doc.text("Anytime Animal Control", pageWidth / 2, 20, { align: 'center' });
+    doc.text("ANYTIME ANIMAL CONTROL", pageWidth / 2, 16, { align: 'center' });
     
+    // Contact Info (White/Light Grey)
     doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text("Mike | 715-459-7412 | TikTok: @MikeFlick3", pageWidth / 2, 26, { align: 'center' });
-    doc.text("Removal of Bats, Squirrels, Raccoons, Skunks, Opossums, & More", pageWidth / 2, 31, { align: 'center' });
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(220, 220, 220);
+    doc.text("Mike | 715-459-7412 | TikTok: @@MikeFlick3", pageWidth / 2, 23, { align: 'center' });
+    doc.setTextColor(180, 180, 180);
+    doc.text("Specialists in Removal of Bats, Squirrels, Raccoons, Skunks, Opossums & More", pageWidth / 2, 28, { align: 'center' });
     
-    doc.setFontSize(12);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Estimate / Invoice", pageWidth / 2, 38, { align: 'center' });
-    
-    const dateStr = new Date().toLocaleString();
-    doc.setFontSize(10);
-    doc.text(`Generated: ${dateStr}`, pageWidth - 15, 20, { align: 'right' });
-    
-    doc.setDrawColor(200, 200, 200);
-    doc.line(15, 42, pageWidth - 15, 42);
-    
-    doc.setFontSize(12);
+    // --- 2. INVOICE META DETAILS ---
+    let yPos = 55;
     doc.setTextColor(0, 0, 0);
-    doc.text("Client Details:", 15, 50);
-    doc.setFontSize(10);
-    doc.text(`Name: ${quoteData.clientName || 'N/A'}`, 15, 56);
-    doc.text(`Address: ${quoteData.clientAddress || 'N/A'}`, 15, 61);
-    doc.text(`Email: ${quoteData.clientEmail || 'N/A'}`, 15, 66);
     
-    let yPos = 80;
+    // Left side: Client Info
     doc.setFontSize(12);
-    doc.text("Services / Items:", 15, yPos);
-    yPos += 10;
-    
+    doc.setFont("helvetica", "bold");
+    doc.text("PREPARED FOR:", 15, yPos);
     doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(quoteData.clientName || 'N/A', 15, yPos + 6);
+    doc.text(quoteData.clientAddress || 'N/A', 15, yPos + 11);
+    doc.text(quoteData.clientEmail || 'N/A', 15, yPos + 16);
+    
+    // Right side: Document Info
+    const dateStr = new Date().toLocaleDateString();
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("ESTIMATE DETAILS", pageWidth - 15, yPos, { align: 'right' });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${dateStr}`, pageWidth - 15, yPos + 6, { align: 'right' });
+    doc.text(`Valid For: 30 Days`, pageWidth - 15, yPos + 11, { align: 'right' });
+    
+    yPos += 30;
+    
+    // --- 3. SERVICES TABLE ---
+    const tableBody = [];
     if (quoteData.ridgeVentFt > 0) {
-        doc.text(`Ridge Vent Screening (${quoteData.ridgeVentFt} ft) | Total: $${quoteData.ridgeVentTotal.toFixed(2)}`, 15, yPos);
-        yPos += 7;
+        tableBody.push(["Ridge Vent Screening", `${quoteData.ridgeVentFt} linear ft`, `$23.00/ft`, `$${quoteData.ridgeVentTotal.toFixed(2)}`]);
     }
     if (quoteData.soffitReturnsCount > 0) {
-        doc.text(`Soffit Returns (${quoteData.soffitReturnsCount} units) | Total: $${quoteData.soffitReturnTotal.toFixed(2)}`, 15, yPos);
-        yPos += 7;
+        tableBody.push(["Soffit Returns", `${quoteData.soffitReturnsCount} units`, `$150.00/ea`, `$${quoteData.soffitReturnTotal.toFixed(2)}`]);
     }
     if (quoteData.sealingFt > 0) {
-        doc.text(`Curled Wood Trim / Brick Sealing (${quoteData.sealingFt} ft) | Total: $${quoteData.sealingTotal.toFixed(2)}`, 15, yPos);
-        yPos += 7;
+        tableBody.push(["Curled Wood Trim / Brick Sealing", `${quoteData.sealingFt} linear ft`, `$20.00/ft`, `$${quoteData.sealingTotal.toFixed(2)}`]);
     }
-    yPos += 10;
+
+    if (doc.autoTable) {
+        doc.autoTable({
+            startY: yPos,
+            head: [['Service Description', 'Quantity', 'Rate', 'Total']],
+            body: tableBody,
+            theme: 'striped',
+            headStyles: { fillColor: [45, 45, 45], textColor: [255, 255, 255], fontStyle: 'bold' },
+            bodyStyles: { textColor: [50, 50, 50] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            columnStyles: {
+                0: { cellWidth: 80 },
+                3: { halign: 'right', fontStyle: 'bold' }
+            },
+            margin: { left: 15, right: 15 }
+        });
+        yPos = doc.lastAutoTable.finalY + 15;
+    } else {
+        doc.text("Table rendering error. Missing autoTable dependency.", 15, yPos);
+        yPos += 20;
+    }
+    
+    // --- 4. GRAND TOTAL BOX ---
+    doc.setFillColor(245, 245, 245);
+    doc.rect(pageWidth - 85, yPos, 70, 20, 'F');
+    doc.setDrawColor(255, 95, 21); // Orange border
+    doc.setLineWidth(0.5);
+    doc.rect(pageWidth - 85, yPos, 70, 20, 'S');
     
     doc.setFontSize(14);
-    doc.text(`Grand Total: $${quoteData.grandTotal.toFixed(2)}`, pageWidth - 15, yPos, { align: 'right' });
-    yPos += 15;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Grand Total:", pageWidth - 80, yPos + 13);
+    doc.setTextColor(255, 95, 21);
+    doc.text(`$${quoteData.grandTotal.toFixed(2)}`, pageWidth - 20, yPos + 13, { align: 'right' });
     
+    yPos += 40;
+    
+    // --- 5. PROJECT NOTES ---
     if (quoteData.projectNotes) {
         doc.setFontSize(12);
-        doc.text("Notes:", 15, yPos);
-        yPos += 7;
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 0, 0);
+        doc.text("Notes / Observations:", 15, yPos);
+        yPos += 6;
+        
         doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(80, 80, 80);
         const splitNotes = doc.splitTextToSize(quoteData.projectNotes, pageWidth - 30);
         doc.text(splitNotes, 15, yPos);
-        yPos += (splitNotes.length * 5) + 10;
+        yPos += (splitNotes.length * 5) + 15;
+    }
+    
+    // --- 6. SIGNATURE & INTEGRITY BLOCK ---
+    // Ensure we have room on the page, otherwise add page
+    if (yPos > pageHeight - 60) {
+        doc.addPage();
+        yPos = 30;
     }
     
     if (quoteData.signatureImage) {
         doc.setFontSize(12);
-        doc.text("Client Signature:", 15, yPos);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 0, 0);
+        doc.text("Client Authorization:", 15, yPos);
         yPos += 5;
-        doc.addImage(quoteData.signatureImage, 'PNG', 15, yPos, 80, 30);
+        
+        // Draw sig box
+        doc.setDrawColor(150, 150, 150);
+        doc.setLineWidth(0.3);
         doc.rect(15, yPos, 80, 30);
-        yPos += 35;
+        doc.addImage(quoteData.signatureImage, 'PNG', 15, yPos, 80, 30);
+        yPos += 40;
     }
     
-    // Legal Verification & Integrity Stamp
-    doc.setFontSize(12);
+    // Legal Verification Stamp Box
+    doc.setFillColor(252, 240, 240); // very faint red bg
+    doc.rect(15, yPos, 100, 25, 'F');
+    doc.setDrawColor(200, 50, 50);
+    doc.setLineWidth(0.5);
+    doc.rect(15, yPos, 100, 25, 'S');
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(200, 50, 50);
-    doc.text("Verification & Integrity:", 15, yPos);
-    yPos += 5;
-    doc.setFontSize(9);
+    doc.text("VERIFICATION & INTEGRITY", 20, yPos + 6);
+    
+    doc.setFontSize(8);
+    doc.setFont("courier", "normal");
     doc.setTextColor(80, 80, 80);
-    doc.text(`Generated Timestamp: ${new Date().toISOString()}`, 15, yPos);
-    yPos += 5;
+    doc.text(`Timestamp: ${new Date().toISOString()}`, 20, yPos + 13);
+    
     if (quoteData.location && !quoteData.location.error) {
-        doc.text(`GPS Coordinates: Lat ${quoteData.location.lat.toFixed(6)}, Long ${quoteData.location.lng.toFixed(6)}`, 15, yPos);
-        yPos += 5;
-        doc.text(`Accuracy: ±${Math.round(quoteData.location.accuracy)} meters`, 15, yPos);
+        doc.text(`GPS: Lat ${quoteData.location.lat.toFixed(6)}, Lng ${quoteData.location.lng.toFixed(6)}`, 20, yPos + 18);
+        doc.text(`Accuracy: ±${Math.round(quoteData.location.accuracy)}m`, 20, yPos + 23);
     } else {
-        doc.text(`GPS Coordinates: Unavailable (${quoteData.location ? quoteData.location.error : 'Not requested'})`, 15, yPos);
+        doc.text(`GPS: Unavailable (${quoteData.location ? quoteData.location.error : 'Denied'})`, 20, yPos + 18);
     }
+
 
     const pdfBlob = doc.output('blob');
     const filename = `Estimate_${quoteData.clientName ? quoteData.clientName.replace(/\s+/g, '_') : 'Client'}_${Date.now()}.pdf`;

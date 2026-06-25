@@ -11,6 +11,24 @@ namespace AnytimeAnimalControl.Pages
         private string clientAddress = string.Empty;
         private string clientEmail = string.Empty;
 
+        // Wizard State
+        public int CurrentStep = 1;
+        public int TotalSteps = 4;
+
+        private bool signatureInitialized = false;
+
+        public void NextStep() 
+        { 
+            if (CurrentStep < TotalSteps) 
+                CurrentStep++; 
+        }
+
+        public void PrevStep() 
+        { 
+            if (CurrentStep > 1) 
+                CurrentStep--; 
+        }
+
         // Calculator Inputs
         private double ridgeVentFt = 0;
         private int soffitReturnsCount = 0;
@@ -32,9 +50,14 @@ namespace AnytimeAnimalControl.Pages
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            if (CurrentStep == TotalSteps && !signatureInitialized)
             {
                 await JSRuntime.InvokeVoidAsync("initSignaturePad", "signatureCanvas");
+                signatureInitialized = true;
+            }
+            else if (CurrentStep != TotalSteps && signatureInitialized)
+            {
+                signatureInitialized = false; // reset so it re-inits if we go back and forth
             }
         }
 
@@ -82,9 +105,18 @@ namespace AnytimeAnimalControl.Pages
             await JSRuntime.InvokeVoidAsync("alert", "Estimate saved offline successfully!");
         }
 
+        public class GeolocationResult
+        {
+            public double Lat { get; set; }
+            public double Lng { get; set; }
+            public double Accuracy { get; set; }
+            public string Error { get; set; }
+        }
+
         private async Task GenerateQuote()
         {
             var signatureDataUrl = await JSRuntime.InvokeAsync<string>("getSignatureData", "signatureCanvas");
+            var locationData = await JSRuntime.InvokeAsync<GeolocationResult>("getGeolocation");
             
             var quoteData = new
             {
@@ -99,7 +131,8 @@ namespace AnytimeAnimalControl.Pages
                 SealingTotal = SealingTotal,
                 GrandTotal = GrandTotal,
                 ProjectNotes = projectNotes,
-                SignatureImage = signatureDataUrl
+                SignatureImage = signatureDataUrl,
+                Location = locationData
             };
 
             await JSRuntime.InvokeVoidAsync("generateQuotePdf", quoteData);

@@ -99,6 +99,29 @@ window.getSignatureData = function (canvasId) {
     return null;
 };
 
+window.getGeolocation = function () {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve({ error: "Geolocation is not supported by your browser." });
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    error: null
+                });
+            },
+            (error) => {
+                resolve({ error: error.message });
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    });
+};
+
 window.saveEstimateOffline = function (estimateData) {
     let estimates = JSON.parse(localStorage.getItem('aac_estimates') || '[]');
     estimates.push({ date: new Date().toISOString(), data: estimateData });
@@ -178,6 +201,24 @@ window.generateQuotePdf = async function (quoteData) {
         yPos += 5;
         doc.addImage(quoteData.signatureImage, 'PNG', 15, yPos, 80, 30);
         doc.rect(15, yPos, 80, 30);
+        yPos += 35;
+    }
+    
+    // Legal Verification & Integrity Stamp
+    doc.setFontSize(12);
+    doc.setTextColor(200, 50, 50);
+    doc.text("Verification & Integrity:", 15, yPos);
+    yPos += 5;
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Generated Timestamp: ${new Date().toISOString()}`, 15, yPos);
+    yPos += 5;
+    if (quoteData.location && !quoteData.location.error) {
+        doc.text(`GPS Coordinates: Lat ${quoteData.location.lat.toFixed(6)}, Long ${quoteData.location.lng.toFixed(6)}`, 15, yPos);
+        yPos += 5;
+        doc.text(`Accuracy: ±${Math.round(quoteData.location.accuracy)} meters`, 15, yPos);
+    } else {
+        doc.text(`GPS Coordinates: Unavailable (${quoteData.location ? quoteData.location.error : 'Not requested'})`, 15, yPos);
     }
 
     const pdfBlob = doc.output('blob');

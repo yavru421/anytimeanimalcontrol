@@ -110,7 +110,7 @@ namespace AnytimeAnimalControl.Pages
             public double Lat { get; set; }
             public double Lng { get; set; }
             public double Accuracy { get; set; }
-            public string Error { get; set; }
+            public string? Error { get; set; }
         }
 
         private async Task GenerateQuote()

@@ -14,18 +14,17 @@ body, html {
     color: var(--text-white);
     margin: 0;
     font-family: system-ui, -apple-system, sans-serif;
-    height: 100vh;
-    overflow: hidden;
-    overscroll-behavior-y: none;
+    min-height: 100vh;
+    overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
 }
 
 #app {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 #blazor-error-ui {
@@ -35,10 +34,10 @@ body, html {
 .app-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 /* Splash / Home Screen */

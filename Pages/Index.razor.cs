@@ -35,9 +35,9 @@ namespace AnytimeAnimalControl.Pages
         private double sealingFt = 0;
 
         // Rates
-        private const double RidgeVentRate = 12.50;
-        private const double SoffitReturnRate = 45.00;
-        private const double SealingRate = 8.75;
+        private const double RidgeVentRate = 23.00;
+        private const double SoffitReturnRate = 150.00;
+        private const double SealingRate = 20.00;
 
         // Notes
         private string projectNotes = string.Empty;

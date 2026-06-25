@@ -54,20 +54,72 @@
         <a class="dismiss">✕</a>
     </div>
 
-    <!-- iOS Add to Home Screen Guidance -->
-    <div id="ios-pwa-prompt" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 16px; border-radius: 12px; z-index: 9999; text-align: center; width: 90%; max-width: 400px; font-family: sans-serif;">
-        <p style="margin: 0 0 10px 0; font-size: 14px;">Install this app on your iPhone: tap the <strong>Share</strong> icon below and select <strong>Add to Home Screen</strong>.</p>
-        <button onclick="document.getElementById('ios-pwa-prompt').style.display='none'" style="background: #007aff; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold;">Got it</button>
+    <!-- Premium Universal A2HS Banner -->
+    <div id="smart-install-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(45, 45, 45, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: white; padding: 20px; box-sizing: border-box; z-index: 10000; border-top: 2px solid #FF5F15; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); font-family: 'Inter', system-ui, sans-serif; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); transform: translateY(100%);">
+        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto; gap: 15px;">
+            <div style="flex-shrink: 0; width: 50px; height: 50px; background: #FF5F15; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🐾</div>
+            <div style="flex-grow: 1;">
+                <h3 style="margin: 0 0 4px 0; color: #FFF; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px;">Install App</h3>
+                <p id="install-instructions" style="margin: 0; font-size: 0.9rem; color: #CCC; line-height: 1.4;">Add to home screen for quick access.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button id="btn-install" style="background: #FF5F15; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-family: 'Inter', sans-serif; cursor: pointer; display: none;">INSTALL</button>
+                <button onclick="dismissInstallBanner()" style="background: transparent; color: #888; border: 1px solid #555; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;">Not Now</button>
+            </div>
+        </div>
     </div>
+    
     <script>
-        // Show prompt only on iOS Safari if not in standalone mode
+        const installBanner = document.getElementById('smart-install-banner');
+        const installBtn = document.getElementById('btn-install');
+        const installInstructions = document.getElementById('install-instructions');
+        let deferredPrompt;
+
+        // Hide banner smoothly and save preference
+        window.dismissInstallBanner = function() {
+            installBanner.style.transform = 'translateY(100%)';
+            setTimeout(() => { installBanner.style.display = 'none'; }, 400);
+            localStorage.setItem('pwa-prompt-dismissed', 'true');
+        };
+
+        const showBanner = () => {
+            if (localStorage.getItem('pwa-prompt-dismissed') === 'true') return;
+            installBanner.style.display = 'block';
+            // Slight delay to trigger CSS transition
+            setTimeout(() => { installBanner.style.transform = 'translateY(0)'; }, 50);
+        };
+
+        // 1. Android / Chrome Logic
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+            installInstructions.innerText = "Install Anytime Animal Control to your device for fast access.";
+            showBanner();
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    dismissInstallBanner();
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // 2. iOS Safari Logic
         const isIos = () => {
             const userAgent = window.navigator.userAgent.toLowerCase();
             return /iphone|ipad|ipod/.test(userAgent);
         };
         const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+        // If it's iOS and not already installed, show manual instructions
         if (isIos() && !isInStandaloneMode()) {
-            document.getElementById('ios-pwa-prompt').style.display = 'block';
+            installInstructions.innerHTML = `Tap <span style="font-size: 1.2rem;">⍗</span> below and select <strong>Add to Home Screen</strong>.`;
+            showBanner();
         }
     </script>
 

@@ -142,24 +142,29 @@ window.generateQuotePdf = async function (quoteData) {
     doc.setTextColor(255, 95, 21);
     doc.text("Anytime Animal Control", pageWidth / 2, 20, { align: 'center' });
     
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text("Mike | 715-459-7412 | TikTok: @MikeFlick3", pageWidth / 2, 26, { align: 'center' });
+    doc.text("Removal of Bats, Squirrels, Raccoons, Skunks, Opossums, & More", pageWidth / 2, 31, { align: 'center' });
+    
     doc.setFontSize(12);
     doc.setTextColor(100, 100, 100);
-    doc.text("Estimate / Invoice", pageWidth / 2, 28, { align: 'center' });
+    doc.text("Estimate / Invoice", pageWidth / 2, 38, { align: 'center' });
     
     const dateStr = new Date().toLocaleString();
     doc.setFontSize(10);
     doc.text(`Generated: ${dateStr}`, pageWidth - 15, 20, { align: 'right' });
     
     doc.setDrawColor(200, 200, 200);
-    doc.line(15, 35, pageWidth - 15, 35);
+    doc.line(15, 42, pageWidth - 15, 42);
     
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text("Client Details:", 15, 45);
+    doc.text("Client Details:", 15, 50);
     doc.setFontSize(10);
-    doc.text(`Name: ${quoteData.clientName || 'N/A'}`, 15, 52);
-    doc.text(`Address: ${quoteData.clientAddress || 'N/A'}`, 15, 58);
-    doc.text(`Email: ${quoteData.clientEmail || 'N/A'}`, 15, 64);
+    doc.text(`Name: ${quoteData.clientName || 'N/A'}`, 15, 56);
+    doc.text(`Address: ${quoteData.clientAddress || 'N/A'}`, 15, 61);
+    doc.text(`Email: ${quoteData.clientEmail || 'N/A'}`, 15, 66);
     
     let yPos = 80;
     doc.setFontSize(12);

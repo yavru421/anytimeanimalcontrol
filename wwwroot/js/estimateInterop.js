@@ -171,6 +171,7 @@ window.generateQuotePdf = async function (quoteData) {
     doc.text(quoteData.clientName || 'N/A', 15, yPos + 6);
     doc.text(quoteData.clientAddress || 'N/A', 15, yPos + 11);
     doc.text(quoteData.clientEmail || 'N/A', 15, yPos + 16);
+    doc.text(quoteData.clientPhone || 'N/A', 15, yPos + 21);
     
     // Right side: Document Info
     const dateStr = new Date().toLocaleDateString();

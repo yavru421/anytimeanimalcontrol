@@ -10,6 +10,7 @@ namespace AnytimeAnimalControl.Pages
         private string clientName = string.Empty;
         private string clientAddress = string.Empty;
         private string clientEmail = string.Empty;
+        private string clientPhone = string.Empty;
 
         // Wizard State
         public int CurrentStep = 1;
@@ -76,6 +77,7 @@ namespace AnytimeAnimalControl.Pages
             clientName = string.Empty;
             clientAddress = string.Empty;
             clientEmail = string.Empty;
+            clientPhone = string.Empty;
             
             ridgeVentFt = 0;
             soffitReturnsCount = 0;
@@ -94,6 +96,7 @@ namespace AnytimeAnimalControl.Pages
                 ClientName = clientName,
                 ClientAddress = clientAddress,
                 ClientEmail = clientEmail,
+                ClientPhone = clientPhone,
                 RidgeVentFt = ridgeVentFt,
                 SoffitReturnsCount = soffitReturnsCount,
                 SealingFt = sealingFt,
@@ -123,6 +126,7 @@ namespace AnytimeAnimalControl.Pages
                 ClientName = clientName,
                 ClientAddress = clientAddress,
                 ClientEmail = clientEmail,
+                ClientPhone = clientPhone,
                 RidgeVentFt = ridgeVentFt,
                 RidgeVentTotal = RidgeVentTotal,
                 SoffitReturnsCount = soffitReturnsCount,

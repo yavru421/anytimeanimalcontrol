@@ -133,6 +133,26 @@ window.generateQuotePdf = async function (quoteData) {
         console.error("jsPDF library not found.");
         return;
     }
+
+    // --- TRACKER PRE-FETCH ---
+    let globalTracker = "0000";
+    let dailyTracker = "00";
+    try {
+        let userId = localStorage.getItem('aac_anon_user_id');
+        if (!userId) {
+            userId = 'usr_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('aac_anon_user_id', userId);
+        }
+        const res = await fetch(`/api/track-pdf?userId=${userId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            globalTracker = String(data.globalCount).padStart(4, '0');
+            dailyTracker = String(data.dailyCount).padStart(2, '0');
+        }
+    } catch (e) {
+        console.error('Failed to get tracker', e);
+    }
+
     
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -282,7 +302,7 @@ window.generateQuotePdf = async function (quoteData) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(200, 50, 50);
-    doc.text("VERIFICATION & INTEGRITY", 20, yPos + 6);
+    doc.text(`VERIFICATION & INTEGRITY - Global: #${globalTracker} | Daily User: #${dailyTracker}`, 20, yPos + 6);
     
     doc.setFontSize(8);
     doc.setFont("courier", "normal");
@@ -301,17 +321,6 @@ window.generateQuotePdf = async function (quoteData) {
     const filename = `Estimate_${quoteData.clientName ? quoteData.clientName.replace(/\s+/g, '_') : 'Client'}_${Date.now()}.pdf`;
     const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
-    // Track PDF generation
-    try {
-        let userId = localStorage.getItem('aac_anon_user_id');
-        if (!userId) {
-            userId = 'usr_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-            localStorage.setItem('aac_anon_user_id', userId);
-        }
-        navigator.sendBeacon(`/api/track-pdf?userId=${userId}`);
-    } catch (e) {
-        console.error('Failed to send PDF generation beacon', e);
-    }
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {

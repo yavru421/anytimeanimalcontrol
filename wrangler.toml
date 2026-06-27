@@ -10,3 +10,8 @@ directory = "output/wwwroot"
 not_found_handling = "single-page-application"
 include = ["**/*"]
 
+[[d1_databases]]
+binding = "DB"
+database_name = "aac-analytics"
+database_id = "e45531ae-07f2-41e0-a382-46580a6a3fd9"
+

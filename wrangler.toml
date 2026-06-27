@@ -1,5 +1,6 @@
 name = "anytimeanimalcontrol"
 compatibility_date = "2024-05-26"
+main = "worker.js"
 
 [build]
 command = "bash build.sh"

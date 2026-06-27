@@ -302,7 +302,7 @@ window.generateQuotePdf = async function (quoteData) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(200, 50, 50);
-    doc.text(`VERIFICATION & INTEGRITY - Global: #${globalTracker} | Daily User: #${dailyTracker}`, 20, yPos + 6);
+    doc.text(`VERIFICATION & INTEGRITY - G: #${globalTracker} | DU: #${dailyTracker}`, 20, yPos + 6);
     
     doc.setFontSize(8);
     doc.setFont("courier", "normal");

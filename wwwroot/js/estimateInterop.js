@@ -301,6 +301,18 @@ window.generateQuotePdf = async function (quoteData) {
     const filename = `Estimate_${quoteData.clientName ? quoteData.clientName.replace(/\s+/g, '_') : 'Client'}_${Date.now()}.pdf`;
     const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
+    // Track PDF generation
+    try {
+        let userId = localStorage.getItem('aac_anon_user_id');
+        if (!userId) {
+            userId = 'usr_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('aac_anon_user_id', userId);
+        }
+        navigator.sendBeacon(`/api/track-pdf?userId=${userId}`);
+    } catch (e) {
+        console.error('Failed to send PDF generation beacon', e);
+    }
+
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
             await navigator.share({

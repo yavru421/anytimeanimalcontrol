@@ -168,6 +168,13 @@
                     // Create File object for sharing
                     const file = new File([byteArray], filename, { type: 'application/pdf' });
                     
+                    // Track PDF generation securely via first-party Cloudflare Worker
+                    try {
+                        navigator.sendBeacon('/api/track-pdf');
+                    } catch (e) {
+                        console.error('Failed to send PDF generation beacon', e);
+                    }
+                    
                     // Use Web Share API if supported (critical for mobile PWA standalone mode)
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         navigator.share({

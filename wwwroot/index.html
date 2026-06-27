@@ -170,7 +170,12 @@
                     
                     // Track PDF generation securely via first-party Cloudflare Worker
                     try {
-                        navigator.sendBeacon('/api/track-pdf');
+                        let userId = localStorage.getItem('aac_anon_user_id');
+                        if (!userId) {
+                            userId = 'usr_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                            localStorage.setItem('aac_anon_user_id', userId);
+                        }
+                        navigator.sendBeacon(`/api/track-pdf?userId=${userId}`);
                     } catch (e) {
                         console.error('Failed to send PDF generation beacon', e);
                     }

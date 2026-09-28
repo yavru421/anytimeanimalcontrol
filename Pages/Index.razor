@@ -15,6 +15,130 @@
         </div>
     </header>
 
+    <!-- Floating Persistent Notes Button (Visible across every screen) -->
+    <button type="button" class="floating-notes-btn @(TotalNotesCount > 0 ? "has-notes" : "")" @onclick="ToggleNotesModal" title="Open Job Notes & Photos">
+        <span class="btn-icon">📝</span>
+        <span class="btn-text">Job Notes</span>
+        @if (TotalNotesCount > 0)
+        {
+            <span class="notes-count-badge">(@TotalNotesCount)</span>
+        }
+    </button>
+
+    <!-- Slide-Up / Overlay Structured Bullet & Photo Notes Modal -->
+    @if (isNotesOpen)
+    {
+        <div class="notes-backdrop" @onclick="ToggleNotesModal">
+            <div class="notes-modal slide-up" @onclick:stopPropagation>
+                <div class="notes-modal-header">
+                    <div class="modal-title-row">
+                        <span class="modal-icon">📋</span>
+                        <h3>Job Notes & Inspection Photos</h3>
+                    </div>
+                    <button type="button" class="btn-modal-close" @onclick="ToggleNotesModal">✕</button>
+                </div>
+                <div class="notes-modal-body">
+                    <p class="modal-desc">
+                        Add bullet notes and site photos. These compile directly into the <strong>Scope & Inspection</strong> section on the final PDF proposal.
+                    </p>
+
+                    <!-- Mobile-First Photo Capture Bar -->
+                    <div class="photo-upload-bar">
+                        <label for="cameraFileInput" class="btn-capture-photo">
+                            <span class="photo-btn-icon">📷</span>
+                            <span class="photo-btn-text">Take Photo / Upload Image</span>
+                        </label>
+                        <InputFile id="cameraFileInput" OnChange="OnPhotoSelected" accept="image/*" multiple style="display:none;" />
+                    </div>
+
+                    @if (isUploadingPhoto)
+                    {
+                        <div class="photo-loading-spinner">
+                            <span>⏳ Optimizing & attaching photo(s)...</span>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(photoUploadError))
+                    {
+                        <div class="photo-error-banner">
+                            <span>⚠️ @photoUploadError</span>
+                        </div>
+                    }
+
+                    <!-- Photo Notes Gallery Grid -->
+                    @if (photoNotes.Count > 0)
+                    {
+                        <div class="photo-notes-section">
+                            <div class="photo-gallery-title">
+                                <span>📸 Attached Photos (@photoNotes.Count):</span>
+                            </div>
+                            <div class="photo-cards-grid">
+                                @foreach (var photo in photoNotes)
+                                {
+                                    <div class="photo-card" key="@photo.Id">
+                                        <div class="photo-img-wrapper">
+                                            <img src="@photo.DataUrl" alt="@photo.Caption" />
+                                            <button type="button" class="btn-remove-photo" @onclick="@(() => RemovePhoto(photo.Id))" title="Delete Photo">✕</button>
+                                        </div>
+                                        <div class="photo-caption-row">
+                                            <input class="photo-caption-input" @bind="photo.Caption" placeholder="Caption (e.g., Gable chew mark)..." />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="quick-preset-chips">
+                        <span class="chip-label">Quick Add Bullets:</span>
+                        <button type="button" class="chip-btn" @onclick="@(() => AppendQuickBullet("Fall work carries a 3-year exclusion warranty."))">
+                            + 3-Year Warranty (Fall Work)
+                        </button>
+                        <button type="button" class="chip-btn" @onclick="@(() => AppendQuickBullet("Includes screening of all soffit returns and ridge vents."))">
+                            + Screening Included
+                        </button>
+                        <button type="button" class="chip-btn" @onclick="@(() => AppendQuickBullet("Client to provide access to attic via garage ladder."))">
+                            + Attic Access
+                        </button>
+                        <button type="button" class="chip-btn" @onclick="@(() => AppendQuickBullet("All work performed from exterior; no interior disturbance."))">
+                            + Exterior Only
+                        </button>
+                    </div>
+
+                    <!-- Structured Bullet List -->
+                    <div class="structured-bullet-list">
+                        @if (structuredNotes.Count == 0 && photoNotes.Count == 0)
+                        {
+                            <div class="empty-notes-hint" style="color: #888; font-style: italic; padding: 12px; text-align: center; border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 10px;">
+                                No notes or photos added yet. Tap 📷 Take Photo or type a bullet note below.
+                            </div>
+                        }
+                        @for (int i = 0; i < structuredNotes.Count; i++)
+                        {
+                            var index = i;
+                            <div class="bullet-item-row">
+                                <span class="bullet-dot">•</span>
+                                <input class="bullet-item-input" @bind="structuredNotes[index]" placeholder="Bullet note..." />
+                                <button type="button" class="btn-remove-bullet" @onclick="@(() => RemoveBullet(index))" title="Delete bullet">✕</button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Add New Bullet Input Row -->
+                    <div class="add-bullet-row">
+                        <input @bind="newBulletText" @onkeyup="HandleBulletKeyUp" placeholder="Type new bullet item and press Enter or tap Add..." class="new-bullet-input" />
+                        <button type="button" class="btn-add-bullet" @onclick="AddBullet">+ Add</button>
+                    </div>
+                </div>
+
+                <div class="notes-modal-footer">
+                    <span class="char-count">@structuredNotes.Count bullet(s), @photoNotes.Count photo(s)</span>
+                    <button type="button" class="btn btn-action glow" @onclick="ToggleNotesModal">Save & Done</button>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="aac-wizard">
         <div class="wizard-progress">
             <div class="progress-bar" style="width: @((CurrentStep * 25) + "%")"></div>
@@ -39,6 +163,14 @@
                 <div class="form-group floating">
                     <input id="clientPhone" type="tel" @bind="clientPhone" placeholder=" " />
                     <label for="clientPhone">Phone Number</label>
+                </div>
+
+                <!-- Quote Database Button at bottom of initial screen (Only area requiring PIN) -->
+                <div class="quote-db-entry-container">
+                    <button type="button" class="btn btn-quote-db" @onclick="OpenQuoteDb">
+                        <span class="db-icon">🗄️</span>
+                        <span>Quote Database</span>
+                    </button>
                 </div>
             </div>
         }
@@ -75,30 +207,161 @@
                 </div>
 
                 <div class="total-banner">
-                    <h3>Subtotal: <span class="grand-total">@($"${GrandTotal:F2}")</span></h3>
+                    <h3>Calculated Subtotal: <span class="grand-total">@($"${LinearSubtotal:F2}")</span></h3>
                 </div>
             </div>
         }
         else if (CurrentStep == 3)
         {
             <div class="wizard-card slide-in">
-                <h2>Project Notes & Location</h2>
-                <div class="form-group">
-                    <textarea @bind="projectNotes" rows="5" class="premium-textarea" placeholder="Enter specific instructions, access details, or wildlife observations here..."></textarea>
+                <h2>Contractor Review & Adjustments</h2>
+                <p class="section-desc">Review calculated linear totals, apply package deals or single-location adjustments, and define customer warranty terms.</p>
+
+                <div class="subtotal-summary-card">
+                    <span class="summary-label">Linear Math Subtotal:</span>
+                    <span class="summary-val">@($"${LinearSubtotal:F2}")</span>
                 </div>
-                <div class="location-notice">
-                    <p>📍 Location data will be recorded upon generation for legal verification.</p>
+
+                <div class="deal-section">
+                    <label class="field-title">⚡ Quick Deal Presets</label>
+                    <div class="preset-buttons">
+                        <button type="button" class="btn btn-preset" @onclick="ApplyHalfDeal">
+                            🔥 50% Off ("Rip Down Middle")
+                        </button>
+                        <button type="button" class="btn btn-preset" @onclick="ApplyQuarterDeal">
+                            🏷️ 25% Off (Volume Deal)
+                        </button>
+                        <button type="button" class="btn btn-preset btn-preset-clear" @onclick="ClearDiscount">
+                            ↺ Full Price
+                        </button>
+                    </div>
+
+                    <div class="form-row-grid">
+                        <div class="form-group floating">
+                            <input id="discountInput" type="number" step="1" min="0" max="@LinearSubtotal" @bind="discountAmount" @bind:event="oninput" @onkeyup="CalculateTotal" @onchange="CalculateTotal" placeholder=" " />
+                            <label for="discountInput">Package Discount ($)</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input id="discountReason" @bind="adjustmentReason" placeholder=" " />
+                            <label for="discountReason">Deal Note / Reason</label>
+                        </div>
+                    </div>
+
+                    <div class="final-deal-banner">
+                        <div class="deal-price-row">
+                            <span>Adjusted Quote Total:</span>
+                            <span class="final-highlight">@($"${GrandTotal:F2}")</span>
+                        </div>
+                        @if (discountAmount > 0)
+                        {
+                            <div class="savings-tag">
+                                💸 Client Savings Applied: @($"${discountAmount:F2}")
+                            </div>
+                        }
+                    </div>
                 </div>
+
+                <div class="warranty-section" style="margin-top: 25px;">
+                    <label class="field-title">🛡️ Customer Warranty Terms</label>
+                    <div class="preset-buttons">
+                        <button type="button" class="btn btn-chip @(customerWarranty.Contains("3-Year") ? "active" : "")" 
+                                @onclick="@(() => SetWarrantyPreset("3-Year Exclusion Guarantee (Fall Work)"))">
+                            ⭐ 3-Year Guarantee (Fall Work)
+                        </button>
+                        <button type="button" class="btn btn-chip @(customerWarranty.Contains("1-Year") ? "active" : "")" 
+                                @onclick="@(() => SetWarrantyPreset("1-Year Full Wildlife Exclusion Guarantee"))">
+                            1-Year Full Warranty
+                        </button>
+                    </div>
+                    <div class="form-group floating" style="margin-top: 15px;">
+                        <input id="warrantyInput" @bind="customerWarranty" placeholder=" " />
+                        <label for="warrantyInput">Warranty Declaration (Printed on PDF)</label>
+                    </div>
+                </div>
+
+                @if (structuredNotes.Count > 0 || photoNotes.Count > 0)
+                {
+                    <div class="attached-notes-preview" @onclick="ToggleNotesModal">
+                        <div class="preview-header">
+                            <span>📋 Attached Notes & Photos (@structuredNotes.Count notes, @photoNotes.Count photos):</span>
+                            <span class="edit-link">Click to Edit ✎</span>
+                        </div>
+                        @if (structuredNotes.Count > 0)
+                        {
+                            <ul class="preview-bullet-list">
+                                @foreach (var note in structuredNotes)
+                                {
+                                    <li>@note</li>
+                                }
+                            </ul>
+                        }
+                        @if (photoNotes.Count > 0)
+                        {
+                            <div class="preview-photo-thumbs-strip">
+                                @foreach (var p in photoNotes)
+                                {
+                                    <div class="preview-thumb-card">
+                                        <img src="@p.DataUrl" alt="@p.Caption" />
+                                        <span class="thumb-cap">@p.Caption</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
             </div>
         }
         else if (CurrentStep == 4)
         {
             <div class="wizard-card slide-in final-card">
-                <h2>Authorization</h2>
+                <h2>Authorization & Agreement</h2>
                 <div class="grand-total-display">
+                    @if (discountAmount > 0)
+                    {
+                        <div class="pricing-breakdown">
+                            <div class="breakdown-row"><span>Linear Calculated Subtotal:</span> <span>@($"${LinearSubtotal:F2}")</span></div>
+                            <div class="breakdown-row discount"><span>Package Deal Discount:</span> <span>-@($"${discountAmount:F2}")</span></div>
+                            <div class="breakdown-reason">@adjustmentReason</div>
+                        </div>
+                    }
                     <h3>Final Estimate: @($"${GrandTotal:F2}")</h3>
+                    <div class="warranty-badge">
+                        <span>🛡️ Warranty: @customerWarranty</span>
+                    </div>
                 </div>
-                <p class="sig-instruction">Please sign below to authorize the quoted work.</p>
+
+                @if (structuredNotes.Count > 0 || photoNotes.Count > 0)
+                {
+                    <div class="attached-notes-preview" @onclick="ToggleNotesModal" style="margin-top: 15px;">
+                        <div class="preview-header">
+                            <span>📋 Scope Notes & Photos on PDF (@structuredNotes.Count notes, @photoNotes.Count photos):</span>
+                            <span class="edit-link">Edit ✎</span>
+                        </div>
+                        @if (structuredNotes.Count > 0)
+                        {
+                            <ul class="preview-bullet-list">
+                                @foreach (var note in structuredNotes)
+                                {
+                                    <li>@note</li>
+                                }
+                            </ul>
+                        }
+                        @if (photoNotes.Count > 0)
+                        {
+                            <div class="preview-photo-thumbs-strip">
+                                @foreach (var p in photoNotes)
+                                {
+                                    <div class="preview-thumb-card">
+                                        <img src="@p.DataUrl" alt="@p.Caption" />
+                                        <span class="thumb-cap">@p.Caption</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                <p class="sig-instruction" style="margin-top: 20px;">Please sign below to authorize the quoted work and warranty terms.</p>
                 <div class="signature-container">
                     <canvas id="signatureCanvas" width="400" height="200"></canvas>
                 </div>
@@ -121,4 +384,175 @@
             }
         </div>
     </div>
+
+    <!-- 6-Digit Field PIN Keypad Modal (Gating Quote Database Only) -->
+    @if (isPinModalOpen)
+    {
+        <div class="pin-modal-backdrop" @onclick="ClosePinModal">
+            <div class="pin-modal slide-up" @onclick:stopPropagation>
+                <div class="pin-modal-header">
+                    <div class="pin-title-row">
+                        <span class="pin-icon">🔐</span>
+                        <h3>Quote Database Access</h3>
+                    </div>
+                    <button type="button" class="btn-modal-close" @onclick="ClosePinModal">✕</button>
+                </div>
+
+                <p class="pin-desc">Enter 6-digit access PIN to unlock customer quote history.</p>
+
+                <div class="pin-dots-display">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        var filled = i < pinInput.Length;
+                        <span class="pin-dot @(filled ? "filled" : "")"></span>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(pinError))
+                {
+                    <div class="pin-error-banner">
+                        <span>⚠️ @pinError</span>
+                    </div>
+                }
+
+                @if (isPinVerifying)
+                {
+                    <div class="pin-verifying-status">
+                        <span>⏳ Verifying PIN...</span>
+                    </div>
+                }
+
+                <!-- Mobile Thumb Keypad -->
+                <div class="pin-numpad-grid">
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("1")'>1</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("2")'>2</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("3")'>3</button>
+
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("4")'>4</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("5")'>5</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("6")'>6</button>
+
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("7")'>7</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("8")'>8</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("9")'>9</button>
+
+                    <button type="button" class="pin-btn pin-btn-action" @onclick="ClearPin">CLR</button>
+                    <button type="button" class="pin-btn" @onclick='() => AppendPinDigit("0")'>0</button>
+                    <button type="button" class="pin-btn pin-btn-action" @onclick="BackspacePin">⌫</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quote Database Modal (Unlocked View) -->
+    @if (isQuoteDbOpen)
+    {
+        <div class="quote-db-backdrop" @onclick="CloseQuoteDb">
+            <div class="quote-db-modal slide-up" @onclick:stopPropagation>
+                <div class="quote-db-header">
+                    <div class="db-title-row">
+                        <span class="db-title-icon">🗄️</span>
+                        <h3>Quote Database</h3>
+                    </div>
+                    <div class="db-header-actions">
+                        <button type="button" class="btn btn-chip" @onclick="ToggleChangePin">
+                            ⚙️ Change PIN
+                        </button>
+                        <button type="button" class="btn-modal-close" @onclick="CloseQuoteDb">✕</button>
+                    </div>
+                </div>
+
+                <!-- Change PIN Sub-Panel -->
+                @if (isChangingPin)
+                {
+                    <div class="change-pin-panel">
+                        <h4>Set / Update 6-Digit Field PIN</h4>
+                        <div class="form-row-grid">
+                            <div class="form-group floating">
+                                <input type="password" maxlength="6" @bind="currentPinInput" placeholder=" " />
+                                <label>Current PIN (Default: 521121)</label>
+                            </div>
+                            <div class="form-group floating">
+                                <input type="password" maxlength="6" @bind="newPinInput" placeholder=" " />
+                                <label>New 6-Digit PIN</label>
+                            </div>
+                        </div>
+                        <div class="pin-change-btn-row">
+                            <button type="button" class="btn btn-action" @onclick="SubmitChangePin">Save New PIN</button>
+                            <button type="button" class="btn btn-secondary" @onclick="ToggleChangePin">Cancel</button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(pinChangeStatus))
+                        {
+                            <div class="pin-change-status @(pinChangeStatus.StartsWith("✓") ? "success" : "error")">
+                                <span>@pinChangeStatus</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Search Input Bar -->
+                <div class="db-search-bar">
+                    <input class="db-search-input" @bind="dbSearchQuery" @bind:event="oninput" placeholder="🔍 Search past quotes by client, address, or phone..." />
+                    @if (!string.IsNullOrEmpty(dbSearchQuery))
+                    {
+                        <button type="button" class="db-search-clear" @onclick='() => dbSearchQuery = ""'>✕</button>
+                    }
+                </div>
+
+                <!-- Estimates List -->
+                <div class="db-estimates-list">
+                    @if (isLoadingEstimates)
+                    {
+                        <div class="db-loading-state">
+                            <span>⏳ Loading quotes from D1 database...</span>
+                        </div>
+                    }
+                    else if (!FilteredEstimates.Any())
+                    {
+                        <div class="db-empty-state">
+                            <p>No saved estimates found.</p>
+                            <small>Estimates automatically save to this vault whenever a price is compiled.</small>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var est in FilteredEstimates)
+                        {
+                            <div class="db-estimate-card" key="@est.Id">
+                                <div class="card-main-info">
+                                    <div class="card-client-row">
+                                        <span class="card-client-name">@(string.IsNullOrWhiteSpace(est.ClientName) ? "Client" : est.ClientName)</span>
+                                        <span class="card-total">@($"${est.GrandTotal:F2}")</span>
+                                    </div>
+                                    <div class="card-meta-row">
+                                        <span class="card-meta-item">📍 @(string.IsNullOrWhiteSpace(est.ClientAddress) ? "No Address" : est.ClientAddress)</span>
+                                        @if (!string.IsNullOrWhiteSpace(est.ClientPhone))
+                                        {
+                                            <span class="card-meta-item">📞 @est.ClientPhone</span>
+                                        }
+                                        <span class="card-meta-item">📅 @(est.CreatedAt?.Split('T')[0] ?? "")</span>
+                                    </div>
+                                    <div class="card-badges-row">
+                                        @if (!string.IsNullOrEmpty(est.CustomerWarranty))
+                                        {
+                                            <span class="warranty-badge-chip">🛡️ @est.CustomerWarranty</span>
+                                        }
+                                        @if (est.PhotoCount > 0)
+                                        {
+                                            <span class="photos-badge-chip">📸 @est.PhotoCount Photos</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="card-action-col">
+                                    <button type="button" class="btn btn-reopen-quote" @onclick="@(() => ReopenEstimate(est))" title="Re-issue & Download PDF">
+                                        📄 Re-open / PDF
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>

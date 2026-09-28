@@ -206,6 +206,21 @@ export default {
             }
         }
         
-        return env.ASSETS.fetch(request);
+        const assetResponse = await env.ASSETS.fetch(request);
+        const contentType = assetResponse.headers.get("content-type") || "";
+        if (contentType.includes("text/html")) {
+            let html = await assetResponse.text();
+            html = html.replace(/<script[^>]*\.webmcp\/bridge\.js[^>]*><\/script>/gi, "");
+            const headers = new Headers(assetResponse.headers);
+            headers.delete("content-length");
+            headers.set("Cache-Control", "no-cache, no-transform");
+            return new Response(html, {
+                status: assetResponse.status,
+                statusText: assetResponse.statusText,
+                headers
+            });
+        }
+
+        return assetResponse;
     }
 }
